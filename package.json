@@ -1,0 +1,22 @@
+{
+  "name": "vayudrishti-app",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.5",
+    "chart.js": "^4.4.3",
+    "dotenv": "^16.4.5",
+    "electron": "^31.0.1",
+    "js": "^0.1.0",
+    "plotly.js-dist": "^2.33.0",
+    "supabase": "^1.176.10"
+  }
+}
