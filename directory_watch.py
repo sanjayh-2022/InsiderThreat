@@ -63,9 +63,9 @@ class Handler(FileSystemEventHandler):
 if __name__ == "__main__":
     def run_watcher_in_background():
         directories_to_watch = [
-            "./",  # Change this to your first directory
+            "./",  
             r"C:\Users\samru\Desktop\Basic_Network_Scanner",  # Change this to your second directory
-            # Add more directories as needed
+            
         ]
         w = Watcher(directories_to_watch)
         w.run()
