@@ -44,37 +44,44 @@ function displayUserList(aggregatedData) {
     const li = document.createElement('li')
     const p = document.createElement('p')
     p.textContent = user_name
+    p.style.cursor = 'pointer' // Set cursor to pointer
     p.addEventListener('click', () =>
       generateChartForUser(user_name, applications)
-    )
+    ) // Add event listener to display chart on click
     const i = document.createElement('i')
-    i.className = 'bx bx-dots-horizontal-rounded'
+    i.className = 'bx bx-dots-vertical-rounded'
     li.appendChild(p)
     li.appendChild(i)
     userListElement.appendChild(li)
   })
 }
 
-let myChart = null
-
 function generateChartForUser(user_name, applications) {
-  const ctx = document.getElementById('usageChart').getContext('2d')
+  const graphContainer = document.getElementById('graph-container')
+  graphContainer.innerHTML = ''
 
-  if (myChart) {
-    myChart.destroy()
-  }
+  const canvas = document.createElement('canvas')
+  canvas.id = `userChart-${user_name}`
+  canvas.width = 400
+  canvas.height = 400
+  graphContainer.appendChild(canvas)
 
-  myChart = new Chart(ctx, {
+  const ctx = canvas.getContext('2d')
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
+  gradient.addColorStop(0, 'rgba(255, 159, 64, 0.9)')
+  gradient.addColorStop(1, 'rgba(255, 99, 132, 0.9)')
+
+  new Chart(ctx, {
     type: 'bar',
     data: {
       labels: Object.keys(applications),
       datasets: [
         {
-          label: `Usage for ${user_name}`,
+          label: `User ${user_name} Application Usage`,
           data: Object.values(applications),
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1,
+          backgroundColor: gradient,
+          borderColor: 'rgba(255, 159, 64, 1)',
+          borderWidth: 2,
         },
       ],
     },
@@ -88,40 +95,53 @@ function generateChartForUser(user_name, applications) {
   })
 }
 
-// Event listener for tab buttons
-document.querySelectorAll('.tab-button').forEach((button) => {
-  button.addEventListener('click', () => {
-    const tab = button.getAttribute('data-tab')
+async function fetchAndDisplayViolationData() {
+  let { data: violationData, error } = await supabase
+    .from('violations')
+    .select('*')
 
-    document
-      .querySelectorAll('.tab-button')
-      .forEach((btn) => btn.classList.remove('active'))
-    document
-      .querySelectorAll('.tab-content')
-      .forEach((content) => content.classList.remove('active'))
+  if (error) {
+    console.error('Error fetching violation data:', error)
+    return
+  }
 
-    button.classList.add('active')
-    document.getElementById(tab).classList.add('active')
-  })
-})
+  const aggregatedData = aggregateViolationData(violationData)
+  generateViolationChart(aggregatedData)
+}
 
-function renderGraphs(aggregatedData) {
-  const ctxUsage = document.getElementById('usageChart').getContext('2d')
-  new Chart(ctxUsage, {
+function aggregateViolationData(violationData) {
+  return violationData.reduce((acc, { application }) => {
+    acc[application] = (acc[application] || 0) + 1
+    return acc
+  }, {})
+}
+
+function generateViolationChart(aggregatedData) {
+  const violationgraphContainer = document.getElementById('violation-count')
+  violationgraphContainer.innerHTML = ''
+
+  const canvas = document.createElement('canvas')
+  canvas.id = 'violationChart'
+  canvas.width = 400
+  canvas.height = 400
+  violationgraphContainer.appendChild(canvas)
+
+  // Obtain the context from the newly created canvas
+  const ctx = canvas.getContext('2d')
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
+  gradient.addColorStop(0, 'rgba(255, 159, 64, 0.9)')
+  gradient.addColorStop(1, 'rgba(255, 99, 132, 0.9)')
+
+  new Chart(ctx, {
     type: 'bar',
     data: {
       labels: Object.keys(aggregatedData),
       datasets: [
         {
-          label: 'Application Usage',
-          data: Object.values(aggregatedData).map((applications) => {
-            return Object.values(applications).reduce(
-              (sum, duration) => sum + duration,
-              0
-            )
-          }),
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
+          label: 'Violation Application Usage Count',
+          data: Object.values(aggregatedData),
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1,
         },
       ],
@@ -134,8 +154,96 @@ function renderGraphs(aggregatedData) {
       },
     },
   })
-
-  // Repeat the chart generation process for other charts using `violationCountChart`, `violationDurationChart`, and `activityOverTimeChart`
 }
 
-fetchAndDisplayUserAnalysis()
+function setupUIInteractions() {
+  const menuBar = document.querySelector('#content nav .bx.bx-menu')
+  const sidebar = document.getElementById('sidebar')
+  const searchButton = document.querySelector(
+    '#content nav form .form-input button'
+  )
+  const searchButtonIcon = document.querySelector(
+    '#content nav form .form-input button .bx'
+  )
+  const searchForm = document.querySelector('#content nav form')
+  const switchMode = document.getElementById('switch-mode')
+
+  menuBar.addEventListener('click', function () {
+    sidebar.classList.toggle('hide')
+  })
+
+  searchButton.addEventListener('click', function (e) {
+    if (window.innerWidth < 576) {
+      e.preventDefault()
+      toggleSearchFormVisibility()
+    }
+  })
+
+  window.addEventListener('resize', function () {
+    if (this.innerWidth > 576) {
+      resetSearchForm()
+    }
+  })
+
+  switchMode.addEventListener('change', function () {
+    document.body.classList.toggle('dark', this.checked)
+  })
+
+  function toggleSearchFormVisibility() {
+    searchForm.classList.toggle('show')
+    searchButtonIcon.classList.toggle(
+      'bx-search',
+      !searchForm.classList.contains('show')
+    )
+    searchButtonIcon.classList.toggle(
+      'bx-x',
+      searchForm.classList.contains('show')
+    )
+  }
+
+  function resetSearchForm() {
+    searchForm.classList.remove('show')
+    searchButtonIcon.classList.replace('bx-x', 'bx-search')
+  }
+
+  document.querySelectorAll('.tab-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const tab = button.getAttribute('data-tab')
+
+      document
+        .querySelectorAll('.tab-button')
+        .forEach((btn) => btn.classList.remove('active'))
+      document
+        .querySelectorAll('.tab-content')
+        .forEach((content) => content.classList.remove('active'))
+
+      button.classList.add('active')
+      document.getElementById(tab).classList.add('active')
+
+      if (tab === 'violation-duration') {
+        console.log(tab)
+        fetchAndDisplayViolationData()
+      }
+    })
+  })
+
+  if (document.getElementById('vc')) {
+    fetchAndDisplayViolationData()
+  }
+  if (document.getElementById('userList')) {
+    fetchAndDisplayUserAnalysis()
+  }
+
+  // Setup violation analytics tab
+  setupViolationAnalytics()
+}
+
+function setupViolationAnalytics() {
+  const analyticsTab = document.getElementById('analyticsTab') // Ensure this is the correct ID for your analytics tab
+  const violationTab = document.createElement('div')
+  violationTab.id = 'violation-graph-container'
+  violationTab.classList.add('tab-content') // Add appropriate class for styling
+  analyticsTab.appendChild(violationTab)
+}
+
+document.addEventListener('DOMContentLoaded', setupUIInteractions)

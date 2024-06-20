@@ -20,7 +20,6 @@ async function fetchViolationsCount() {
   if (newOrderH3 && newOrderP) {
     newOrderH3.textContent = count
     newOrderP.textContent = 'Violations'
-    console.log(count)
   }
 }
 
