@@ -2,6 +2,7 @@ from supabase import create_client
 from dotenv import  load_dotenv
 import time
 import os
+import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 load_dotenv()
@@ -60,10 +61,18 @@ class Handler(FileSystemEventHandler):
             print(f"Error inserting data: {e}")
 
 if __name__ == "__main__":
-    directories_to_watch = [
-        "./",   # Change this to your first directory
-        r"C:\Users\samru\Desktop\Basic_Network_Scanner",  # Change this to your second directory
-        # Add more directories as needed
-    ]
-    w = Watcher(directories_to_watch)
-    w.run()
+    def run_watcher_in_background():
+        directories_to_watch = [
+            "./",  # Change this to your first directory
+            r"C:\Users\samru\Desktop\Basic_Network_Scanner",  # Change this to your second directory
+            # Add more directories as needed
+        ]
+        w = Watcher(directories_to_watch)
+        w.run()
+
+
+    background_thread = threading.Thread(target=run_watcher_in_background, daemon=True)
+    background_thread.start()
+
+    while True:
+        time.sleep(1)
