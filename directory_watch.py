@@ -1,46 +1,69 @@
-import psutil
-import win32gui
-import win32process
+from supabase import create_client
+from dotenv import  load_dotenv
 import time
-from collections import defaultdict
-from win10toast import ToastNotifier
-import pyautogui
+import os
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+load_dotenv()
 
-toaster = ToastNotifier()
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+supabase = create_client(url, key)
+class Watcher:
+    def __init__(self, directories_to_watch):
+        self.directories_to_watch = directories_to_watch
+        self.event_handler = Handler()
+        self.observer = Observer()
 
-def get_active_window_process_name():
-    hwnd = win32gui.GetForegroundWindow()
-    _, pid = win32process.GetWindowThreadProcessId(hwnd)
-    process = psutil.Process(pid)
-    return process.name()
+    def run(self):
+        for directory in self.directories_to_watch:
+            self.observer.schedule(self.event_handler, directory, recursive=True)
+        self.observer.start()
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            self.observer.stop()
+        self.observer.join()
 
+class Handler(FileSystemEventHandler):
+    @staticmethod
+    def on_created(event):
+        try:
+            print(f"Created: {event.src_path}")
+            supabase.table("directory").insert({"operation":'created', "path": f'{event.src_path}'}).execute()
+        except Exception as e:
+            print(f"Error inserting data: {e}")
 
-def track_application_usage(interval=1):
-    app_usage = defaultdict(int)
-    last_app = None
-    last_time = time.time()
+    @staticmethod
+    def on_deleted(event):
+        try:
+            print(f"Deleted: {event.src_path}")
+            supabase.table("directory").insert({"operation": 'deleted', "path": f'{event.src_path}'}).execute()
+        except Exception as e:
+            print(f"Error inserting data: {e}")
 
-    while True:
-        current_time = time.time()
-        current_app = get_active_window_process_name()
+    @staticmethod
+    def on_modified(event):
+        try:
+            print(f"Modified: {event.src_path}")
+            supabase.table("directory").insert({"operation": 'modified', "path": f'{event.src_path}'}).execute()
+        except Exception as e:
+            print(f"Error inserting data: {e}")
 
-        if current_app == last_app:
-            app_usage[current_app] += current_time - last_time
-        else:
-            last_app = current_app
-
-        last_time = current_time
-        time.sleep(interval)
-
-
-
-        print(f'Debig : Last App: {last_app} - {app_usage[last_app]:.2f}')
-
-        if last_app == 'chrome.exe' and app_usage[last_app] > 20:
-            print('You have been using Chrome for too long!')
-            pyautogui.screenshot('screenshot.png')
-            toaster.show_toast("Warning", "You have been using Chrome for too long!", duration=10, icon_path=None, threaded=True)
+    @staticmethod
+    def on_moved(event):
+        try:
+            print(f"Moved: from {event.src_path} to {event.dest_path}")
+            supabase.table("directory").insert({"operation": 'moved', "path": f'{event.src_path}'}).execute()
+        except Exception as e:
+            print(f"Error inserting data: {e}")
 
 if __name__ == "__main__":
-    print("Tracking application usage... ")
-    track_application_usage()
+    directories_to_watch = [
+        "./",   # Change this to your first directory
+        r"C:\Users\samru\Desktop\Basic_Network_Scanner",  # Change this to your second directory
+        # Add more directories as needed
+    ]
+    w = Watcher(directories_to_watch)
+    w.run()
