@@ -44,10 +44,10 @@ function displayUserList(aggregatedData) {
     const li = document.createElement('li')
     const p = document.createElement('p')
     p.textContent = user_name
-    p.style.cursor = 'pointer' // Set cursor to pointer
+    p.style.cursor = 'pointer'
     p.addEventListener('click', () =>
       generateChartForUser(user_name, applications)
-    ) // Add event listener to display chart on click
+    )
     const i = document.createElement('i')
     i.className = 'bx bx-dots-vertical-rounded'
     li.appendChild(p)
@@ -239,10 +239,10 @@ function setupUIInteractions() {
 }
 
 function setupViolationAnalytics() {
-  const analyticsTab = document.getElementById('analyticsTab') // Ensure this is the correct ID for your analytics tab
+  const analyticsTab = document.getElementById('analyticsTab')
   const violationTab = document.createElement('div')
   violationTab.id = 'violation-graph-container'
-  violationTab.classList.add('tab-content') // Add appropriate class for styling
+  violationTab.classList.add('tab-content')
   analyticsTab.appendChild(violationTab)
 }
 
