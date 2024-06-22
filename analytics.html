@@ -11,8 +11,8 @@
 <body>
     <section id="sidebar">
         <a href="#" class="brand">
-            <i class='bx bxs-smile'></i>
-            <span class="text">AdminHub</span>
+            <i class='bx bxs-lock'></i>
+            <span class="text">SecureIQ</span>
         </a>
         <ul class="side-menu top">
             <li>
@@ -24,7 +24,7 @@
             <li>
                 <a href="#">
                     <i class='bx bxs-shopping-bag-alt'></i>
-                    <span class="text">My Store</span>
+                    <span class="text">Report</span>
                 </a>
             </li>
             <li class="active">
@@ -36,13 +36,13 @@
             <li>
                 <a href="#">
                     <i class='bx bxs-message-dots'></i>
-                    <span class="text">Message</span>
+                    <span class="text">Alerts</span>
                 </a>
             </li>
             <li>
                 <a href="#">
                     <i class='bx bxs-group'></i>
-                    <span class="text">Team</span>
+                    <span class="text">Users</span>
                 </a>
             </li>
         </ul>
@@ -99,7 +99,7 @@
             <div class="table-data">
                 <div class="order">
                     <div class="head">
-                        <h3>Users</h3>
+                        <h3>Users</h3> 
                     </div>
                     <ul class="todo-list" id="userList">
                         <!-- Users will be displayed here -->
@@ -112,9 +112,9 @@
                     <div class="tabs">
                         <button class="tab-button active" data-tab="usage">Application Usage</button>
                         <!-- Add more tab buttons for other graphs here -->
-                        <button class="tab-button" data-tab="violation-count">Violation Application Usage Count</button>
-                        <button class="tab-button" data-tab="violation-duration">Violation Application Usage Duration</button>
-                        <button class="tab-button" data-tab="activity-over-time">User Activity Over Time</button>
+                        <button class="tab-button vc" data-tab="violation-count">Violation Application Usage Count</button>
+                        <button class="tab-button vd" data-tab="violation-duration">Violation Application Usage Duration</button>
+                        <button class="tab-button aot" data-tab="activity-over-time">User Activity Over Time</button>
                     </div>
                     <div id="graph-container">
                         <div id="usage" class="tab-content active">
@@ -137,6 +137,6 @@
             </div>
         </main>
     </section>
-    <script src="renderer.js"></script>
+    <script type="module" src="renderer.js"></script>
 </body>
 </html>

@@ -9,7 +9,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.43.5",
     "chart.js": "^4.4.3",
@@ -18,5 +17,6 @@
     "js": "^0.1.0",
     "plotly.js-dist": "^2.33.0",
     "supabase": "^1.176.10"
-  }
+  },
+  "description": ""
 }
