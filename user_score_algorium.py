@@ -2,17 +2,39 @@ import os
 from supabase import create_client, Client
 import win32gui
 from dotenv import load_dotenv
+import pandas as pd
+
 load_dotenv()
 
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
 
-#url = os.environ.get("SUPABASE_URL")
-#key = os.environ.get("SUPABASE_KEY")
+supabase = create_client(url, key)
 
+response = supabase.table("user_analysis2").select("*").execute()
+data = pd.DataFrame(response.data)
+assert not data.empty
+user_data = {}  # Initialize an empty dictionary
 
-#supabase = create_client(url, key)
+# Iterate over the DataFrame rows and store data for different users
+for index, row in data.iterrows():
+    user = row['user_name']  # Assuming 'user' is the column name for user identification
+    if user not in user_data:
+        user_data[user] = []
+    user_data[user].append({
+        'application': row.get('application', 'unknown'),  # Use get to avoid KeyError
+        'duration': row.get('duration', 0),  # Default to 0 if key is missing
+        'access_count': row.get('access_count', 0)  # Default to 0 if key is missing
+    })
+
+print(user_data)
+
+if 'samru' in user_data:
+    print(user_data['samru'])
+else:
+    print("No data for user 'samru'.")
 
 def evaluate_user_behavior(data, role):
-
     role_criteria = {
         "admin": {
             "weights": {"critical": 5, "dangerous": 4, "bad": 3, "good": 1},
@@ -32,7 +54,7 @@ def evaluate_user_behavior(data, role):
         },
         "student": {
             "weights": {"critical": 4, "dangerous": 3, "bad": 2, "good": 2},
-            "thresholds": {"duration": 40, "access_count": 6}
+            "thresholds": {"duration": 5, "access_count": 5}
         },
         "intern": {
             "weights": {"critical": 4, "dangerous": 3, "bad": 1, "good": 2},
@@ -66,10 +88,10 @@ def evaluate_user_behavior(data, role):
             "critical": ["restricted_system", "malware_access"]
         },
         "student": {
-            "good": ["learning_platforms", "document_editor", "email"],
-            "bad": ["social_media", "video_streaming"],
-            "dangerous": ["file_sharing"],
-            "critical": ["restricted_system", "malware_access"]
+            "good": ["chrome.exe", "WhatsApp", "pycharm64.exe"],
+            "bad": ["unlockingwondow", "LockApp.exe"],
+            "dangerous": ["Settings"],
+            "critical": ["photos.exe", "Notepad.exe"]
         },
         "intern": {
             "good": ["email", "calendar", "learning_platforms"],
@@ -79,19 +101,17 @@ def evaluate_user_behavior(data, role):
         }
     }
 
-    
     role_weights = role_criteria[role]["weights"]
     role_thresholds = role_criteria[role]["thresholds"]
     app_criteria_role = app_criteria[role]
 
-
     score = 0
 
-
     for row in data:
-        app = row["application_name"]
-        duration = row["duration_of_use"]
-        access_count = row["access_count"]
+        print(f"Evaluating row: {row}")  # Print each row to debug
+        app = row.get("application", "unknown")
+        duration = row.get("duration", 0)
+        access_count = row.get("access_count", 0)
 
         app_score = 0
         for category, apps in app_criteria_role.items():
@@ -99,26 +119,19 @@ def evaluate_user_behavior(data, role):
                 app_score = role_weights[category]
                 break
 
-
         duration_score = (duration / role_thresholds["duration"]) * app_score
         access_count_score = (access_count / role_thresholds["access_count"]) * app_score
-
 
         score += duration_score + access_count_score
 
     return score
 
-
-#data = supabase.table("user_analysis").select("*").execute()
-
-
-data = [
-    {"application_name": "email", "duration_of_use": 20, "access_count": 5},
-    {"application_name": "social_media", "duration_of_use": 40, "access_count": 3},
-    {"application_name": "unauthorized_access", "duration_of_use": 10, "access_count": 1}
-]
-role = "developer"
+data = user_data.get('samru', [])
+role = "student"
 print(data)
 
-user_score = evaluate_user_behavior(data, role)
-print(f"User behavior score: {user_score * 10}")
+if data:
+    user_score = evaluate_user_behavior(data, role)
+    print(f"User behavior score: {user_score }")
+else:
+    print("No data to evaluate.")
