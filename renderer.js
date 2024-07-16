@@ -15,9 +15,50 @@ async function fetchAndDisplayUserAnalysis() {
     console.error('Error fetching data:', error);
     return;
   }
-
   const aggregatedData = aggregateUserData(userAnalysisData);
   displayUserList(aggregatedData);
+}
+
+async function fetchAndRenderAlerts() {
+  try {
+    let { data: alerts, error } = await supabase
+      .from('Alerts')
+      .select('*');
+
+    if (error) throw error;
+    return alerts
+  } catch (error) {
+    console.error('Error fetching alerts:', error);
+  }
+}
+// Fetch alerts from your data source (e.g., Supabase)
+fetchAndRenderAlerts().then(alerts => {
+  renderAlertsTable(alerts);
+});
+
+function renderAlertsTable(alerts) {
+  // Find the table's tbody within .table-data > .order
+  const tbody = document.querySelector('.table-data .order table tbody');
+
+  // Clear existing table rows (if any)
+  tbody.innerHTML = '';
+
+  // Iterate over the alerts data and create a row for each alert
+  alerts.forEach(alert => {
+    // Create a new row
+    const row = tbody.insertRow();
+
+    // Insert cells for user, alert, and action status
+    const userCell = row.insertCell(0);
+    userCell.textContent = alert.user_name;
+
+    const alertCell = row.insertCell(1);
+    alertCell.textContent = alert.alert;
+
+    const actionStatusCell = row.insertCell(2);
+    actionStatusCell.textContent = alert.action;
+    console.log(alert.alert, alert.user)
+  });
 }
 
 function aggregateUserData(userAnalysisData) {
@@ -138,6 +179,7 @@ function generateViolationChart(aggregatedData) {
     }
   });
 }
+
 
 function setupUIInteractions() {
   const menuBar = document.querySelector('#content nav .bx.bx-menu');

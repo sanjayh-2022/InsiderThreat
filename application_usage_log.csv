@@ -1,0 +1,9 @@
+Timestamp,Application,User,Duration (minutes),Access Count
+2024-06-29 14:20:23 (Saturday),Code.exe,samru,0,1
+2024-06-29 14:20:58 (Saturday),pycharm64.exe,samru,0.59,1
+2024-06-29 14:21:05 (Saturday),Code.exe,samru,0.12,2
+2024-06-29 14:21:25 (Saturday),chrome.exe,samru,0.33,1
+2024-06-29 14:21:34 (Saturday),explorer.exe,samru,0.15,1
+2024-06-29 14:21:43 (Saturday),pycharm64.exe,samru,0.15,2
+2024-06-29 14:22:06 (Saturday),explorer.exe,samru,0.39,2
+2024-06-29 14:22:08 (Saturday),Code.exe,samru,0.03,3
